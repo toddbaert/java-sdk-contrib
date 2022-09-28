@@ -24,12 +24,18 @@ export interface FlagdWebProviderOptions {
   protocol?: string;
 }
 
+interface Cache {
+  [key: string]: ResolutionDetails<object|boolean|number|string>
+}
+
 export class FlagdWebProvider {
   metadata = {
     name: 'flagD Provider',
   };
 
   promiseClient: PromiseClient<typeof Service>
+
+  cache: Cache
 
   constructor(options?: FlagdWebProviderOptions) {
     const {host, port, protocol}: FlagdWebProviderOptions = {
@@ -42,6 +48,7 @@ export class FlagdWebProvider {
       baseUrl: `${protocol}://${host}:${port}`
     });
     this.promiseClient = createPromiseClient(Service, transport);
+    this.cache = {}
   }
 
   resolveBooleanEvaluation(
@@ -49,22 +56,30 @@ export class FlagdWebProvider {
     defaultValue: boolean,
     transformedContext: EvaluationContext
   ): Promise<ResolutionDetails<boolean>> {
-      return this.promiseClient.resolveBoolean({
-        flagKey,
-        context: Struct.fromJsonString(JSON.stringify(transformedContext)),
-      }).then((res) => {
-        return {
-          value: res.value,
-          reason: res.reason,
-          variant: res.variant,
-        }
-      }).catch((err: unknown) => {
-        return {
-          reason: StandardResolutionReasons.ERROR,
-          errorCode: ErrorResponse(err),
-          value: defaultValue,
-        };
-      })
+    const req = {
+      flagKey,
+      context: Struct.fromJsonString(JSON.stringify(transformedContext)),
+    }
+    const reqHash = JSON.stringify(req);
+    if (this.cache[reqHash] != null) {
+      console.log(`returning value from cache`)
+      return Promise.resolve(this.cache[reqHash] as ResolutionDetails<boolean>)
+    }
+    return this.promiseClient.resolveBoolean(req).then((res) => {
+      const resDetails = {
+        value: res.value,
+        reason: res.reason,
+        variant: res.variant,
+      }
+      this.cache[reqHash] = resDetails
+      return resDetails
+    }).catch((err: unknown) => {
+      return {
+        reason: StandardResolutionReasons.ERROR,
+        errorCode: ErrorResponse(err),
+        value: defaultValue,
+      };
+    })
   }
 
   resolveStringEvaluation(

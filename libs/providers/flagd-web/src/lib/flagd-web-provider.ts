@@ -3,7 +3,8 @@ import {
   ResolutionDetails,
   ErrorCode,
   StandardResolutionReasons,
-} from '@openfeature/nodejs-sdk';
+  JsonValue
+} from '@openfeature/js-sdk';
 import {
   createConnectTransport,
   createPromiseClient,
@@ -153,7 +154,7 @@ export class FlagdWebProvider {
     })
   }
 
-  resolveObjectEvaluation<U extends object>(
+  resolveObjectEvaluation<U extends JsonValue>(
     flagKey: string,
     defaultValue: U,
     transformedContext: EvaluationContext

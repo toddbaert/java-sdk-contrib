@@ -2,17 +2,20 @@ import {
   EvaluationContext,
   ResolutionDetails,
   ErrorCode,
-  StandardResolutionReasons
+  StandardResolutionReasons,
 } from '@openfeature/nodejs-sdk';
 import {
   createConnectTransport,
   createPromiseClient,
+  createCallbackClient,
   PromiseClient,
+  CallbackClient,
   ConnectError,
   Code
 } from "@bufbuild/connect-web";
 import { Struct } from "@bufbuild/protobuf";
-import { Service } from '../proto/ts/schema/v1/schema_connectweb'
+import { Service } from '@buf/bufbuild_connect-web_open-feature_flagd-dev/schema/v1/schema_connectweb.js'
+import {Md5} from 'ts-md5';
 
 export const ERROR_PARSE_ERROR = "PARSE_ERROR"
 export const ERROR_DISABLED = "DISABLED"
@@ -28,12 +31,16 @@ interface Cache {
   [key: string]: ResolutionDetails<object|boolean|number|string>
 }
 
+const EVENT_CONFIGURATION_CHANGE = "configuration_change";
+const EVENT_PROVIDER_READY = "provider_ready";
+
 export class FlagdWebProvider {
   metadata = {
     name: 'flagD Provider',
   };
 
   promiseClient: PromiseClient<typeof Service>
+  callbackClient: CallbackClient<typeof Service>
 
   cache: Cache
 
@@ -48,8 +55,25 @@ export class FlagdWebProvider {
       baseUrl: `${protocol}://${host}:${port}`
     });
     this.promiseClient = createPromiseClient(Service, transport);
+    this.callbackClient = createCallbackClient(Service, transport);
     this.cache = {}
+
+    this.callbackClient.eventStream(
+      {},
+      (message) => {
+        console.log(`event received: ${message.type}`);
+        switch (message.type) {
+          case EVENT_CONFIGURATION_CHANGE:
+            console.log("configuration change: busting cache");
+            this.cache = {}
+        }
+      },
+      (err) => {
+        console.log(err);
+      },
+    )
   }
+
 
   resolveBooleanEvaluation(
     flagKey: string,
@@ -60,7 +84,8 @@ export class FlagdWebProvider {
       flagKey,
       context: Struct.fromJsonString(JSON.stringify(transformedContext)),
     }
-    const reqHash = JSON.stringify(req);
+    const reqHash = Md5.hashStr(JSON.stringify(req));
+    console.log(reqHash)
     if (this.cache[reqHash] != null) {
       console.log(`returning value from cache`)
       return Promise.resolve(this.cache[reqHash] as ResolutionDetails<boolean>)

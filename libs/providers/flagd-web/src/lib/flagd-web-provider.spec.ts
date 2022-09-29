@@ -5,7 +5,7 @@
 //   Client,
 //   ErrorCode,
 //   StandardResolutionReasons,
-} from '@openfeature/js-sdk';
+// } from '@openfeature/js-sdk';
 // import {
 //   Code,
 //   codeToString,

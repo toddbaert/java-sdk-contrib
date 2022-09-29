@@ -16,7 +16,7 @@ import {
 } from "@bufbuild/connect-web";
 import { Struct } from "@bufbuild/protobuf";
 import { Service } from '@buf/bufbuild_connect-web_open-feature_flagd-dev/schema/v1/schema_connectweb.js'
-import {Md5} from 'ts-md5';
+import { sha1 } from 'object-hash';
 
 export const ERROR_PARSE_ERROR = "PARSE_ERROR"
 export const ERROR_DISABLED = "DISABLED"
@@ -26,10 +26,13 @@ export interface FlagdWebProviderOptions {
   host?: string;
   port?: number;
   protocol?: string;
+  cache?: boolean;
+  cacheTTL?: number;
+  cacheMaxKeys?: number;
 }
 
 interface Cache {
-  [key: string]: ResolutionDetails<object|boolean|number|string>
+  [key: string]: ResolutionDetails<JsonValue|boolean|number|string>
 }
 
 const EVENT_CONFIGURATION_CHANGE = "configuration_change";
@@ -44,12 +47,14 @@ export class FlagdWebProvider {
   callbackClient: CallbackClient<typeof Service>
 
   cache: Cache
+  cacheActive: boolean
 
   constructor(options?: FlagdWebProviderOptions) {
-    const {host, port, protocol}: FlagdWebProviderOptions = {
+    const {host, port, protocol, cache}: FlagdWebProviderOptions = {
       host: "localhost",
       port: 8013,
       protocol: "http",
+      cache: false,
       ...options
     };
     const transport = createConnectTransport({
@@ -58,6 +63,7 @@ export class FlagdWebProvider {
     this.promiseClient = createPromiseClient(Service, transport);
     this.callbackClient = createCallbackClient(Service, transport);
     this.cache = {}
+    this.cacheActive = cache
 
     this.callbackClient.eventStream(
       {},
@@ -75,7 +81,6 @@ export class FlagdWebProvider {
     )
   }
 
-
   resolveBooleanEvaluation(
     flagKey: string,
     defaultValue: boolean,
@@ -85,10 +90,8 @@ export class FlagdWebProvider {
       flagKey,
       context: Struct.fromJsonString(JSON.stringify(transformedContext)),
     }
-    const reqHash = Md5.hashStr(JSON.stringify(req));
-    console.log(reqHash)
-    if (this.cache[reqHash] != null) {
-      console.log(`returning value from cache`)
+    const reqHash = sha1(req);
+    if (this.cacheActive && this.cache[reqHash] != null) {
       return Promise.resolve(this.cache[reqHash] as ResolutionDetails<boolean>)
     }
     return this.promiseClient.resolveBoolean(req).then((res) => {
@@ -97,7 +100,9 @@ export class FlagdWebProvider {
         reason: res.reason,
         variant: res.variant,
       }
-      this.cache[reqHash] = resDetails
+      if (this.cacheActive) {
+        this.cache[reqHash] = resDetails
+      }
       return resDetails
     }).catch((err: unknown) => {
       return {
@@ -113,15 +118,27 @@ export class FlagdWebProvider {
     defaultValue: string,
     transformedContext: EvaluationContext
   ): Promise<ResolutionDetails<string>> {
+    const req = {
+      flagKey,
+      context: Struct.fromJsonString(JSON.stringify(transformedContext)),
+    }
+    const reqHash = sha1(req);
+    if (this.cacheActive && this.cache[reqHash] != null) {
+      return Promise.resolve(this.cache[reqHash] as ResolutionDetails<string>)
+    }
     return this.promiseClient.resolveString({
       flagKey,
       context: Struct.fromJsonString(JSON.stringify(transformedContext)),
     }).then((res) => {
-      return {
+      const resDetails = {
         value: res.value,
         reason: res.reason,
         variant: res.variant,
       }
+      if (this.cacheActive) {
+        this.cache[reqHash] = resDetails
+      }
+      return resDetails
     }).catch((err: unknown) => {
       return {
         reason: StandardResolutionReasons.ERROR,
@@ -136,15 +153,27 @@ export class FlagdWebProvider {
     defaultValue: number,
     transformedContext: EvaluationContext
   ): Promise<ResolutionDetails<number>> {
+    const req = {
+      flagKey,
+      context: Struct.fromJsonString(JSON.stringify(transformedContext)),
+    }
+    const reqHash = sha1(req);
+    if (this.cacheActive && this.cache[reqHash] != null) {
+      return Promise.resolve(this.cache[reqHash] as ResolutionDetails<number>)
+    }
     return this.promiseClient.resolveFloat({
       flagKey,
       context: Struct.fromJsonString(JSON.stringify(transformedContext)),
     }).then((res) => {
-      return {
+      const resDetails = {
         value: res.value,
         reason: res.reason,
         variant: res.variant,
       }
+      if (this.cacheActive) {
+        this.cache[reqHash] = resDetails
+      }
+      return resDetails
     }).catch((err: unknown) => {
       return {
         reason: StandardResolutionReasons.ERROR,
@@ -159,16 +188,28 @@ export class FlagdWebProvider {
     defaultValue: U,
     transformedContext: EvaluationContext
   ): Promise<ResolutionDetails<U>> {
+    const req = {
+      flagKey,
+      context: Struct.fromJsonString(JSON.stringify(transformedContext)),
+    }
+    const reqHash = sha1(req);
+    if (this.cacheActive && this.cache[reqHash] != null) {
+      return Promise.resolve(this.cache[reqHash] as ResolutionDetails<U>)
+    }
     return this.promiseClient.resolveObject({
       flagKey,
       context: Struct.fromJsonString(JSON.stringify(transformedContext)),
     }).then((res) => {
       if (res.value) {
-        return {
+        const resDetails = {
           value: JSON.parse(res.value.toJsonString()) as U,
           reason: res.reason,
           variant: res.variant,
         }
+        if (this.cacheActive) {
+        this.cache[reqHash] = resDetails
+      }
+        return resDetails
       }
       return {
         value: defaultValue,

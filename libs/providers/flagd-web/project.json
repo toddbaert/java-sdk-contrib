@@ -67,7 +67,7 @@
         "compiler": "babel",
         "umdName": "flagd-web",
         "external": ["typescript"],
-        "format": ["cjs", "esm"],
+        "format": ["cjs", "esm"], 
         "assets": [
           {
             "glob": "LICENSE",

@@ -17,6 +17,9 @@ import {
 import { Struct } from "@bufbuild/protobuf";
 import { Service } from '@buf/bufbuild_connect-web_open-feature_flagd-dev/schema/v1/schema_connectweb.js'
 import { sha1 } from 'object-hash';
+import NodeCache from 'node-cache'
+import { time } from 'console';
+import { ServerDuplexStreamImpl } from '@grpc/grpc-js/build/src/server-call';
 
 export const ERROR_PARSE_ERROR = "PARSE_ERROR"
 export const ERROR_DISABLED = "DISABLED"
@@ -25,18 +28,16 @@ export const ERROR_UNKNOWN = "UNKNOWN"
 export interface FlagdWebProviderOptions {
   host?: string;
   port?: number;
-  protocol?: string;
+  tls?: boolean;
   cache?: boolean;
   cacheTTL?: number;
-  cacheMaxKeys?: number;
-}
-
-interface Cache {
-  [key: string]: ResolutionDetails<JsonValue|boolean|number|string>
+  cacheMaxBytes?: number;
+  maxRetries?: number;
 }
 
 const EVENT_CONFIGURATION_CHANGE = "configuration_change";
 const EVENT_PROVIDER_READY = "provider_ready";
+const ERROR_CONNECTION_ERROR = "CONNECTION_ERROR"
 
 export class FlagdWebProvider {
   metadata = {
@@ -46,39 +47,72 @@ export class FlagdWebProvider {
   promiseClient: PromiseClient<typeof Service>
   callbackClient: CallbackClient<typeof Service>
 
-  cache: Cache
-  cacheActive: boolean
+  cache: NodeCache;
+  cacheActive: boolean;
+  providerReady: boolean;
+  connectionError = false;
 
   constructor(options?: FlagdWebProviderOptions) {
-    const {host, port, protocol, cache}: FlagdWebProviderOptions = {
+    const {host, port, tls, cache, cacheTTL, cacheMaxBytes, maxRetries}: FlagdWebProviderOptions = {
       host: "localhost",
       port: 8013,
-      protocol: "http",
+      tls: false,
       cache: false,
+      cacheTTL: 0,
+      cacheMaxBytes: 0,
+      maxRetries: 5,
       ...options
     };
+    this.providerReady = false;
     const transport = createConnectTransport({
-      baseUrl: `${protocol}://${host}:${port}`
+      baseUrl: `${tls ? "https" : "http"}://${host}:${port}`
     });
     this.promiseClient = createPromiseClient(Service, transport);
     this.callbackClient = createCallbackClient(Service, transport);
-    this.cache = {}
-    this.cacheActive = cache
-
-    this.callbackClient.eventStream(
-      {},
-      (message) => {
-        console.log(`event received: ${message.type}`);
-        switch (message.type) {
-          case EVENT_CONFIGURATION_CHANGE:
-            console.log("configuration change: busting cache");
-            this.cache = {}
+    this.cache = new NodeCache({
+      stdTTL: cacheTTL
+    })
+    if (cacheMaxBytes != 0) {
+      this.cache.addListener("set", () => {
+        const s = this.cache.getStats()
+        if (s.ksize + s.vsize > cacheMaxBytes) {
+          console.log(`maximum cache size of ${cacheMaxBytes} reached: busting cache`)
+          this.cache.flushAll();
         }
-      },
-      (err) => {
-        console.log(err);
-      },
-    )
+      })
+    }
+    this.cacheActive = cache
+    this.initConnection(maxRetries)
+  }
+
+  async initConnection(maxRetries: number) {
+    for (let i=0;i<=maxRetries;i++) {
+      this.callbackClient.eventStream(
+        {},
+        (message) => {
+          console.log(`event received: ${message.type}`);
+          switch (message.type) {
+            case EVENT_PROVIDER_READY:
+              this.providerReady = true;
+              return
+            case EVENT_CONFIGURATION_CHANGE:
+              console.log("configuration change: busting cache");
+              this.cache.flushAll();
+              return
+          }
+        },
+        async () => {
+          if (i != maxRetries) {
+            const delay = (i+1) * Math.random() * 300
+            console.log(`connection failed on attempt ${i+1}, retrying in ${delay}ms`)
+            await new Promise(f => setTimeout(f, delay));
+          } else {
+            console.log("could not establish connection to flagd")
+            this.connectionError = true
+          }
+        },
+      )
+    }
   }
 
   resolveBooleanEvaluation(
@@ -86,13 +120,22 @@ export class FlagdWebProvider {
     defaultValue: boolean,
     transformedContext: EvaluationContext
   ): Promise<ResolutionDetails<boolean>> {
+    if (!this.providerReady) {
+      return Promise.resolve({
+        value: defaultValue,
+        reason: StandardResolutionReasons.ERROR,
+        errorCode: this.connectionError ? ERROR_CONNECTION_ERROR : ErrorCode.PROVIDER_NOT_READY
+      })
+    }
     const req = {
       flagKey,
       context: Struct.fromJsonString(JSON.stringify(transformedContext)),
     }
     const reqHash = sha1(req);
-    if (this.cacheActive && this.cache[reqHash] != null) {
-      return Promise.resolve(this.cache[reqHash] as ResolutionDetails<boolean>)
+    if (this.cacheActive && this.cache.get(reqHash) != undefined) {
+      return Promise.resolve(this.cache.get(reqHash) as ResolutionDetails<boolean>)
+    } else {
+      console.log(this.cache.get(reqHash))
     }
     return this.promiseClient.resolveBoolean(req).then((res) => {
       const resDetails = {
@@ -101,7 +144,7 @@ export class FlagdWebProvider {
         variant: res.variant,
       }
       if (this.cacheActive) {
-        this.cache[reqHash] = resDetails
+        this.cache.set(reqHash, resDetails)
       }
       return resDetails
     }).catch((err: unknown) => {
@@ -118,13 +161,20 @@ export class FlagdWebProvider {
     defaultValue: string,
     transformedContext: EvaluationContext
   ): Promise<ResolutionDetails<string>> {
+    if (!this.providerReady) {
+      return Promise.resolve({
+        value: defaultValue,
+        reason: StandardResolutionReasons.ERROR,
+        errorCode: this.connectionError ? ERROR_CONNECTION_ERROR : ErrorCode.PROVIDER_NOT_READY
+      })
+    }
     const req = {
       flagKey,
       context: Struct.fromJsonString(JSON.stringify(transformedContext)),
     }
     const reqHash = sha1(req);
-    if (this.cacheActive && this.cache[reqHash] != null) {
-      return Promise.resolve(this.cache[reqHash] as ResolutionDetails<string>)
+    if (this.cacheActive && this.cache.get(reqHash) != undefined) {
+      return Promise.resolve(this.cache.get(reqHash) as ResolutionDetails<string>)
     }
     return this.promiseClient.resolveString({
       flagKey,
@@ -136,7 +186,7 @@ export class FlagdWebProvider {
         variant: res.variant,
       }
       if (this.cacheActive) {
-        this.cache[reqHash] = resDetails
+        this.cache.set(reqHash, resDetails)
       }
       return resDetails
     }).catch((err: unknown) => {
@@ -153,13 +203,20 @@ export class FlagdWebProvider {
     defaultValue: number,
     transformedContext: EvaluationContext
   ): Promise<ResolutionDetails<number>> {
+    if (!this.providerReady) {
+      return Promise.resolve({
+        value: defaultValue,
+        reason: StandardResolutionReasons.ERROR,
+        errorCode: this.connectionError ? ERROR_CONNECTION_ERROR : ErrorCode.PROVIDER_NOT_READY
+      })
+    }
     const req = {
       flagKey,
       context: Struct.fromJsonString(JSON.stringify(transformedContext)),
     }
     const reqHash = sha1(req);
-    if (this.cacheActive && this.cache[reqHash] != null) {
-      return Promise.resolve(this.cache[reqHash] as ResolutionDetails<number>)
+    if (this.cacheActive && this.cache.get(reqHash) != undefined) {
+      return Promise.resolve(this.cache.get(reqHash) as ResolutionDetails<number>)
     }
     return this.promiseClient.resolveFloat({
       flagKey,
@@ -171,7 +228,7 @@ export class FlagdWebProvider {
         variant: res.variant,
       }
       if (this.cacheActive) {
-        this.cache[reqHash] = resDetails
+        this.cache.set(reqHash, resDetails)
       }
       return resDetails
     }).catch((err: unknown) => {
@@ -188,13 +245,20 @@ export class FlagdWebProvider {
     defaultValue: U,
     transformedContext: EvaluationContext
   ): Promise<ResolutionDetails<U>> {
+    if (!this.providerReady) {
+      return Promise.resolve({
+        value: defaultValue,
+        reason: StandardResolutionReasons.ERROR,
+        errorCode: this.connectionError ? ERROR_CONNECTION_ERROR : ErrorCode.PROVIDER_NOT_READY
+      })
+    }
     const req = {
       flagKey,
       context: Struct.fromJsonString(JSON.stringify(transformedContext)),
     }
     const reqHash = sha1(req);
-    if (this.cacheActive && this.cache[reqHash] != null) {
-      return Promise.resolve(this.cache[reqHash] as ResolutionDetails<U>)
+    if (this.cacheActive && this.cache.get(reqHash) != undefined) {
+      return Promise.resolve(this.cache.get(reqHash) as ResolutionDetails<U>)
     }
     return this.promiseClient.resolveObject({
       flagKey,
@@ -207,7 +271,7 @@ export class FlagdWebProvider {
           variant: res.variant,
         }
         if (this.cacheActive) {
-        this.cache[reqHash] = resDetails
+        this.cache.set(reqHash, resDetails)
       }
         return resDetails
       }

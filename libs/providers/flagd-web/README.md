@@ -26,8 +26,8 @@ Options can be defined in the constructor or as environment variables, with cons
 | tls         | FLAGD_WEB_TLS                 | boolean | false     | when set to true the provider will attempt to connect to flagd via https |
 | maxRetries       | FLAGD_WEB_MAX_RETRIES               | number | -     | sets the maximum number of retries for a connection to be made to the flagd instance |
 | cache       | FLAGD_WEB_CACHE               | boolean | false     | when set to true the provider will use client side caching |
-| cacheTTL       | FLAGD_WEB_CACHE_TTL               | number | 0     | sets the timeout for items in the cache, a value of 0 disables the timeout |
-| cacheMaxBytes       | FLAGD_WEB_CACHE_MAX_BYTES               | number | -     | sets maximum size for the cache in bytes, when the threshold is reached the cache is emptied |
+| cacheTTL       | FLAGD_WEB_CACHE_TTL               | number | 0     | sets the timeout for items in the cache in seconds, a value of 0 disables the timeout |
+| cacheMaxBytes       | FLAGD_WEB_CACHE_MAX_BYTES               | number | -     | sets maximum size for the cache in bytes, once the threshold is reached the cache is emptied. A value of 0 disables this functionality |
 
 
 ## Example
@@ -43,6 +43,12 @@ OpenFeature.setProvider(new FlagdWebProvider({
   maxRetries: 10,
 }))
 ```
+
+## Building
+
+Run `nx package providers-flagd` to build the library.
+
+> NOTE: [Buf](https://docs.buf.build/installation) must be installed to build locally.
 
 ## Running unit tests
 

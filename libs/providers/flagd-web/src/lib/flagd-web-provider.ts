@@ -15,33 +15,28 @@ import {
   Code
 } from "@bufbuild/connect-web";
 import { Struct } from "@bufbuild/protobuf";
-import { Service } from '@buf/bufbuild_connect-web_open-feature_flagd-dev/schema/v1/schema_connectweb.js'
-import { sha1 } from 'object-hash';
+import { Service } from '../proto/ts/schema/v1/schema_connectweb'
+import { Md5 } from 'ts-md5';
 import NodeCache from 'node-cache'
-import { time } from 'console';
-import { ServerDuplexStreamImpl } from '@grpc/grpc-js/build/src/server-call';
+import {getConfig, Config} from './configuration'
 
 export const ERROR_PARSE_ERROR = "PARSE_ERROR"
 export const ERROR_DISABLED = "DISABLED"
 export const ERROR_UNKNOWN = "UNKNOWN"
 
-export interface FlagdWebProviderOptions {
-  host?: string;
-  port?: number;
-  tls?: boolean;
-  cache?: boolean;
-  cacheTTL?: number;
-  cacheMaxBytes?: number;
-  maxRetries?: number;
-}
-
 const EVENT_CONFIGURATION_CHANGE = "configuration_change";
 const EVENT_PROVIDER_READY = "provider_ready";
 const ERROR_CONNECTION_ERROR = "CONNECTION_ERROR"
 
+interface ConfigurationChangeBody {
+  type: "delete" | "write" | "update"
+  source: string
+  flagKey: string
+}
+
 export class FlagdWebProvider {
   metadata = {
-    name: 'flagD Provider',
+    name: 'flagD Web Provider',
   };
 
   promiseClient: PromiseClient<typeof Service>
@@ -52,17 +47,8 @@ export class FlagdWebProvider {
   providerReady: boolean;
   connectionError = false;
 
-  constructor(options?: FlagdWebProviderOptions) {
-    const {host, port, tls, cache, cacheTTL, cacheMaxBytes, maxRetries}: FlagdWebProviderOptions = {
-      host: "localhost",
-      port: 8013,
-      tls: false,
-      cache: false,
-      cacheTTL: 0,
-      cacheMaxBytes: 0,
-      maxRetries: 5,
-      ...options
-    };
+  constructor(options?: Config) {
+    const {host, port, tls, cache, cacheTTL, cacheMaxBytes, maxRetries} = getConfig(options)
     this.providerReady = false;
     const transport = createConnectTransport({
       baseUrl: `${tls ? "https" : "http"}://${host}:${port}`
@@ -82,37 +68,53 @@ export class FlagdWebProvider {
       })
     }
     this.cacheActive = cache
-    this.initConnection(maxRetries)
+    this.initStream(0, maxRetries)
+
   }
 
-  async initConnection(maxRetries: number) {
-    for (let i=0;i<=maxRetries;i++) {
-      this.callbackClient.eventStream(
-        {},
-        (message) => {
-          console.log(`event received: ${message.type}`);
-          switch (message.type) {
-            case EVENT_PROVIDER_READY:
-              this.providerReady = true;
+  async initStream(i: number, maxRetries: number) {
+    this.callbackClient.eventStream(
+      {},
+      (message) => {
+        console.log(`event received: ${message.type}`);
+        switch (message.type) {
+          case EVENT_PROVIDER_READY:
+            this.providerReady = true;
+            return
+          case EVENT_CONFIGURATION_CHANGE: {
+            const s = message.data?.toJsonString()
+            if (s === undefined) {
+              console.error("configuration change: malformed configuration change received, flushing all", message)
+              this.cache.flushAll()
               return
-            case EVENT_CONFIGURATION_CHANGE:
-              console.log("configuration change: busting cache");
-              this.cache.flushAll();
-              return
+            }
+            const body = JSON.parse(s) as ConfigurationChangeBody
+            const keys = this.cache.keys()
+            let deleted = 0
+            for (let i=0;i<keys.length;i++) {
+              const prefix = keys[i].split("--")[0]
+              if (body.flagKey === prefix) {
+                deleted ++
+                this.cache.del(keys[i])
+              }
+            }
+            console.log(`configuration change: ${body.type}  ${body.flagKey}  ${body.source} cache items busted: ${deleted}`)
+            return
           }
-        },
-        async () => {
-          if (i != maxRetries) {
-            const delay = (i+1) * Math.random() * 300
-            console.log(`connection failed on attempt ${i+1}, retrying in ${delay}ms`)
-            await new Promise(f => setTimeout(f, delay));
-          } else {
-            console.log("could not establish connection to flagd")
-            this.connectionError = true
-          }
-        },
-      )
-    }
+        }
+      },
+      async () => {
+        if (i != maxRetries) {
+          const delay = (i+1) * Math.random() * 300
+          console.log(`connection failed on attempt ${i+1}, retrying in ${delay}ms`)
+          await new Promise(f => setTimeout(f, delay));
+          this.initStream(i+1, maxRetries)
+        } else {
+          console.log("could not establish connection to flagd")
+          this.connectionError = true
+        }
+      },
+    )
   }
 
   resolveBooleanEvaluation(
@@ -131,11 +133,9 @@ export class FlagdWebProvider {
       flagKey,
       context: Struct.fromJsonString(JSON.stringify(transformedContext)),
     }
-    const reqHash = sha1(req);
+    const reqHash = `${flagKey}--${Md5.hashStr(JSON.stringify(req.context))}`;
     if (this.cacheActive && this.cache.get(reqHash) != undefined) {
       return Promise.resolve(this.cache.get(reqHash) as ResolutionDetails<boolean>)
-    } else {
-      console.log(this.cache.get(reqHash))
     }
     return this.promiseClient.resolveBoolean(req).then((res) => {
       const resDetails = {
@@ -172,7 +172,7 @@ export class FlagdWebProvider {
       flagKey,
       context: Struct.fromJsonString(JSON.stringify(transformedContext)),
     }
-    const reqHash = sha1(req);
+    const reqHash = `${flagKey}--${Md5.hashStr(JSON.stringify(req.context))}`;
     if (this.cacheActive && this.cache.get(reqHash) != undefined) {
       return Promise.resolve(this.cache.get(reqHash) as ResolutionDetails<string>)
     }
@@ -214,7 +214,7 @@ export class FlagdWebProvider {
       flagKey,
       context: Struct.fromJsonString(JSON.stringify(transformedContext)),
     }
-    const reqHash = sha1(req);
+    const reqHash = `${flagKey}--${Md5.hashStr(JSON.stringify(req.context))}`;
     if (this.cacheActive && this.cache.get(reqHash) != undefined) {
       return Promise.resolve(this.cache.get(reqHash) as ResolutionDetails<number>)
     }
@@ -256,7 +256,7 @@ export class FlagdWebProvider {
       flagKey,
       context: Struct.fromJsonString(JSON.stringify(transformedContext)),
     }
-    const reqHash = sha1(req);
+    const reqHash = `${flagKey}--${Md5.hashStr(JSON.stringify(req.context))}`;
     if (this.cacheActive && this.cache.get(reqHash) != undefined) {
       return Promise.resolve(this.cache.get(reqHash) as ResolutionDetails<U>)
     }

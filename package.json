@@ -11,8 +11,7 @@
   },
   "private": true,
   "dependencies": {
-    "@buf/bufbuild_connect-web_james-milligan_flagd": "^1.7.5",
-    "@buf/bufbuild_connect-web_open-feature_flagd-dev": "^1.7.1",
+    "@buf/bufbuild_connect-web_open-feature_flagd-dev": "^1.7.2",
     "@bufbuild/connect-web": "^0.2.1",
     "@grpc/grpc-js": "^1.6.7",
     "@opentelemetry/api": "^1.1.0",

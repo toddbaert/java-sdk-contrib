@@ -20,9 +20,7 @@ import { Md5 } from 'ts-md5';
 import NodeCache from 'node-cache'
 import {getConfig, Config} from './configuration'
 
-export const ERROR_PARSE_ERROR = "PARSE_ERROR"
 export const ERROR_DISABLED = "DISABLED"
-export const ERROR_UNKNOWN = "UNKNOWN"
 
 const EVENT_CONFIGURATION_CHANGE = "configuration_change";
 const EVENT_PROVIDER_READY = "provider_ready";
@@ -300,8 +298,8 @@ function ErrorResponse(err: unknown): string {
     case Code.Unavailable:
         return ERROR_DISABLED
     case Code.DataLoss:
-        return ERROR_PARSE_ERROR
+        return ErrorCode.PARSE_ERROR
     default:
-      return ERROR_UNKNOWN
+      return ErrorCode.GENERAL
   }
 }

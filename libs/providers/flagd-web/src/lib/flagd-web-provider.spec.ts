@@ -1,4 +1,4 @@
-import { ERROR_DISABLED, ERROR_PARSE_ERROR, FlagdWebProvider } from './flagd-web-provider';
+import { ERROR_DISABLED, FlagdWebProvider } from './flagd-web-provider';
 import fetchMock from "jest-fetch-mock";
 import {
   OpenFeature,
@@ -203,7 +203,7 @@ describe('FlagdProvider', () => {
         });
       if (res) {
         expect(res.reason).toEqual(StandardResolutionReasons.ERROR);
-        expect(res.errorCode).toEqual(ERROR_PARSE_ERROR);
+        expect(res.errorCode).toEqual(ErrorCode.PARSE_ERROR);
       } else {
         expect(res).not.toBeNull();
       }

@@ -33,7 +33,7 @@
     "@nrwl/nx-cloud": "latest",
     "@nrwl/web": "^14.2.4",
     "@nrwl/workspace": "14.2.1",
-    "@openfeature/js-sdk": "0.4.0-experimental-e9ba70956ed77c7b41032b149a8f6bf915ae50e4",
+    "@openfeature/js-sdk": "~0.5.0",
     "@types/jest": "27.4.1",
     "@types/node": "16.11.7",
     "@types/object-hash": "^2.2.1",

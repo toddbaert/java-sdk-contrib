@@ -39,7 +39,7 @@ describe('FlagdProvider', () => {
         fetchMock.mockResponseOnce(JSON.stringify({
           variant: 'success',
           value: true,
-          reason: StandardResolutionReasons.STATIC,
+          reason: StandardResolutionReasons.DEFAULT,
         }), {headers: {
           "Content-Type":"application/json"
         }})
@@ -55,7 +55,7 @@ describe('FlagdProvider', () => {
         fetchMock.mockResponseOnce(JSON.stringify({
           variant: 'success',
           value: "true",
-          reason: StandardResolutionReasons.STATIC,
+          reason: StandardResolutionReasons.DEFAULT,
         }), {headers: {
           "Content-Type":"application/json"
         }})
@@ -71,7 +71,7 @@ describe('FlagdProvider', () => {
         fetchMock.mockResponseOnce(JSON.stringify({
           variant: 'success',
           value: 1,
-          reason: StandardResolutionReasons.STATIC,
+          reason: StandardResolutionReasons.DEFAULT,
         }), {headers: {
           "Content-Type":"application/json"
         }})
@@ -87,7 +87,7 @@ describe('FlagdProvider', () => {
         fetchMock.mockResponseOnce(JSON.stringify({
           variant: 'success',
           value: {foo:"bar"},
-          reason: StandardResolutionReasons.STATIC,
+          reason: StandardResolutionReasons.DEFAULT,
         }), {headers: {
           "Content-Type":"application/json"
         }})
@@ -179,7 +179,7 @@ describe('FlagdProvider', () => {
         });
       if (res) {
         expect(res.reason).toEqual(StandardResolutionReasons.ERROR);
-        expect(res.errorCode).toEqual(ERROR_DISABLED);
+        expect(res.errorCode).toEqual(ErrorCode.GENERAL);
       } else {
         expect(res).not.toBeNull();
       }

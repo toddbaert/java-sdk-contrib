@@ -24,7 +24,6 @@ export const ERROR_DISABLED = "DISABLED"
 
 const EVENT_CONFIGURATION_CHANGE = "configuration_change";
 const EVENT_PROVIDER_READY = "provider_ready";
-const ERROR_CONNECTION_ERROR = "CONNECTION_ERROR"
 
 interface ConfigurationChangeBody {
   type: "delete" | "write" | "update"
@@ -124,7 +123,7 @@ export class FlagdWebProvider {
       return Promise.resolve({
         value: defaultValue,
         reason: StandardResolutionReasons.ERROR,
-        errorCode: this.connectionError ? ERROR_CONNECTION_ERROR : ErrorCode.PROVIDER_NOT_READY
+        errorCode: this.connectionError ? ErrorCode.GENERAL : ErrorCode.PROVIDER_NOT_READY
       })
     }
     const req = {
@@ -148,7 +147,7 @@ export class FlagdWebProvider {
     }).catch((err: unknown) => {
       return {
         reason: StandardResolutionReasons.ERROR,
-        errorCode: ErrorResponse(err),
+        errorCode: mapError(err),
         value: defaultValue,
       };
     })
@@ -163,7 +162,7 @@ export class FlagdWebProvider {
       return Promise.resolve({
         value: defaultValue,
         reason: StandardResolutionReasons.ERROR,
-        errorCode: this.connectionError ? ERROR_CONNECTION_ERROR : ErrorCode.PROVIDER_NOT_READY
+        errorCode: this.connectionError ? ErrorCode.GENERAL : ErrorCode.PROVIDER_NOT_READY
       })
     }
     const req = {
@@ -190,7 +189,7 @@ export class FlagdWebProvider {
     }).catch((err: unknown) => {
       return {
         reason: StandardResolutionReasons.ERROR,
-        errorCode: ErrorResponse(err),
+        errorCode: mapError(err),
         value: defaultValue,
       };
     })
@@ -205,7 +204,7 @@ export class FlagdWebProvider {
       return Promise.resolve({
         value: defaultValue,
         reason: StandardResolutionReasons.ERROR,
-        errorCode: this.connectionError ? ERROR_CONNECTION_ERROR : ErrorCode.PROVIDER_NOT_READY
+        errorCode: this.connectionError ? ErrorCode.GENERAL : ErrorCode.PROVIDER_NOT_READY
       })
     }
     const req = {
@@ -232,7 +231,7 @@ export class FlagdWebProvider {
     }).catch((err: unknown) => {
       return {
         reason: StandardResolutionReasons.ERROR,
-        errorCode: ErrorResponse(err),
+        errorCode: mapError(err),
         value: defaultValue,
       };
     })
@@ -247,7 +246,7 @@ export class FlagdWebProvider {
       return Promise.resolve({
         value: defaultValue,
         reason: StandardResolutionReasons.ERROR,
-        errorCode: this.connectionError ? ERROR_CONNECTION_ERROR : ErrorCode.PROVIDER_NOT_READY
+        errorCode: this.connectionError ? ErrorCode.GENERAL : ErrorCode.PROVIDER_NOT_READY
       })
     }
     const req = {
@@ -281,14 +280,14 @@ export class FlagdWebProvider {
     }).catch((err: unknown) => {
       return {
         reason: StandardResolutionReasons.ERROR,
-        errorCode: ErrorResponse(err),
+        errorCode: mapError(err),
         value: defaultValue,
       };
     })
   }
 }
 
-function ErrorResponse(err: unknown): string {
+function mapError(err: unknown): ErrorCode {
   err as Partial<ConnectError>
   switch ((err as Partial<ConnectError>).code) {
     case Code.NotFound:
@@ -296,7 +295,7 @@ function ErrorResponse(err: unknown): string {
     case Code.InvalidArgument:
       return ErrorCode.TYPE_MISMATCH
     case Code.Unavailable:
-        return ERROR_DISABLED
+        return ErrorCode.GENERAL
     case Code.DataLoss:
         return ErrorCode.PARSE_ERROR
     default:

@@ -1,5 +1,40 @@
 # Changelog
 
+## [2.0.0](https://github.com/toddbaert/java-sdk-contrib/compare/dev.openfeature.contrib.providers.go-feature-flag-v0.2.5...dev.openfeature.contrib.providers.go-feature-flag-v2.0.0) (2023-04-10)
+
+
+### ⚠ BREAKING CHANGES
+
+* use 1.0 sdk ([#123](https://github.com/toddbaert/java-sdk-contrib/issues/123))
+* udpate to sdk 0.3.0
+* update to sdk 0.3.0 ([#116](https://github.com/toddbaert/java-sdk-contrib/issues/116))
+
+### Features
+
+* Go feature flag provider ([#106](https://github.com/toddbaert/java-sdk-contrib/issues/106)) ([f793722](https://github.com/toddbaert/java-sdk-contrib/commit/f7937223d21ee97ebab2f42e79cb264d2b77ed4a))
+* Support apiKey for GO Feature Flag relay proxy v1.7.0 ([#270](https://github.com/toddbaert/java-sdk-contrib/issues/270)) ([83d9000](https://github.com/toddbaert/java-sdk-contrib/commit/83d9000497c3bcfc544c0a38e57c32a4ebe5e0bb))
+* udpate to sdk 0.3.0 ([8933bb9](https://github.com/toddbaert/java-sdk-contrib/commit/8933bb9b4521e44572b67e6784fd7ce6c541d7b8))
+* update to sdk 0.3.0 ([#116](https://github.com/toddbaert/java-sdk-contrib/issues/116)) ([8933bb9](https://github.com/toddbaert/java-sdk-contrib/commit/8933bb9b4521e44572b67e6784fd7ce6c541d7b8))
+
+
+### Bug Fixes
+
+* attach original exception when throwing a general error ([#247](https://github.com/toddbaert/java-sdk-contrib/issues/247)) ([cc5d7e5](https://github.com/toddbaert/java-sdk-contrib/commit/cc5d7e56b9aecba075fc1515e035e9fc77bb1c9f))
+* **deps:** update dependency com.fasterxml.jackson.core:jackson-databind to v2.14.1 ([#145](https://github.com/toddbaert/java-sdk-contrib/issues/145)) ([a17eb44](https://github.com/toddbaert/java-sdk-contrib/commit/a17eb44e2ccdd2eddd2be996ea2cc7141fc14e9a))
+* **deps:** update dependency com.fasterxml.jackson.core:jackson-databind to v2.14.2 ([#207](https://github.com/toddbaert/java-sdk-contrib/issues/207)) ([b5f0d3d](https://github.com/toddbaert/java-sdk-contrib/commit/b5f0d3daa2a19a7b51648a6644eba9973f154be6))
+* **deps:** update dependency com.fasterxml.jackson.datatype:jackson-datatype-jsr310 to v2.14.1 ([#146](https://github.com/toddbaert/java-sdk-contrib/issues/146)) ([42d172c](https://github.com/toddbaert/java-sdk-contrib/commit/42d172c6539b82e75de61028683a35a6ae08ece9))
+* **deps:** update dependency com.fasterxml.jackson.datatype:jackson-datatype-jsr310 to v2.14.2 ([#208](https://github.com/toddbaert/java-sdk-contrib/issues/208)) ([7c1ff7a](https://github.com/toddbaert/java-sdk-contrib/commit/7c1ff7a731e7ce13126095e7d239709445929e5f))
+* GO Feature Flag provider fix issues + compatible with SDK 0.1.0 ([#132](https://github.com/toddbaert/java-sdk-contrib/issues/132)) ([046947d](https://github.com/toddbaert/java-sdk-contrib/commit/046947dc58fa717d0bfa6d5c516261fe79fd9e9e))
+* issue on unknown field ([#246](https://github.com/toddbaert/java-sdk-contrib/issues/246)) ([2b7163a](https://github.com/toddbaert/java-sdk-contrib/commit/2b7163a3f1392251d7268efa5751156ba8c93694))
+* update javadoc ([8828cce](https://github.com/toddbaert/java-sdk-contrib/commit/8828cceadf3571b25155dbd8d0d88589244ade2a))
+* update-parent-pom ([#120](https://github.com/toddbaert/java-sdk-contrib/issues/120)) ([d8ac4bd](https://github.com/toddbaert/java-sdk-contrib/commit/d8ac4bdba6b5d9efb98ea641d50337f0e3ba3139))
+
+
+### Miscellaneous Chores
+
+* release ([c855cd2](https://github.com/toddbaert/java-sdk-contrib/commit/c855cd2160c6c9f1d56b058a79af13725333dfe1))
+* use 1.0 sdk ([#123](https://github.com/toddbaert/java-sdk-contrib/issues/123)) ([ee78f61](https://github.com/toddbaert/java-sdk-contrib/commit/ee78f610f669eff6f90ffc958e1be88ed203350f))
+
 ## [0.2.5](https://github.com/open-feature/java-sdk-contrib/compare/dev.openfeature.contrib.providers.go-feature-flag-v0.2.4...dev.openfeature.contrib.providers.go-feature-flag-v0.2.5) (2023-04-07)
 
 

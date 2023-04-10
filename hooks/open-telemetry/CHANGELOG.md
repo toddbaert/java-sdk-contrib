@@ -1,5 +1,46 @@
 # Changelog
 
+## [2.0.0](https://github.com/toddbaert/java-sdk-contrib/compare/dev.openfeature.contrib.hooks.otel-v1.0.2...dev.openfeature.contrib.hooks.otel-v2.0.0) (2023-04-10)
+
+
+### ⚠ BREAKING CHANGES
+
+* use 1.0 sdk ([#123](https://github.com/toddbaert/java-sdk-contrib/issues/123))
+* udpate to sdk 0.3.0
+* update to sdk 0.3.0 ([#116](https://github.com/toddbaert/java-sdk-contrib/issues/116))
+
+### Features
+
+* add flagd provider implementation ([#66](https://github.com/toddbaert/java-sdk-contrib/issues/66)) ([8d299c4](https://github.com/toddbaert/java-sdk-contrib/commit/8d299c41ad0bef8c3e81cc3c50932f1ee254c644))
+* add spec compliant otel hook ([55a2ac2](https://github.com/toddbaert/java-sdk-contrib/commit/55a2ac24260ee6ef1b909924ecf9694a07ad6969))
+* add spec compliant otel hook ([#169](https://github.com/toddbaert/java-sdk-contrib/issues/169)) ([55a2ac2](https://github.com/toddbaert/java-sdk-contrib/commit/55a2ac24260ee6ef1b909924ecf9694a07ad6969))
+* udpate to sdk 0.3.0 ([8933bb9](https://github.com/toddbaert/java-sdk-contrib/commit/8933bb9b4521e44572b67e6784fd7ce6c541d7b8))
+* update to sdk 0.3.0 ([#116](https://github.com/toddbaert/java-sdk-contrib/issues/116)) ([8933bb9](https://github.com/toddbaert/java-sdk-contrib/commit/8933bb9b4521e44572b67e6784fd7ce6c541d7b8))
+
+
+### Bug Fixes
+
+* build issue with single publish ([#81](https://github.com/toddbaert/java-sdk-contrib/issues/81)) ([de03321](https://github.com/toddbaert/java-sdk-contrib/commit/de0332125253ff61df388caa502dbfecc244531a))
+* **deps:** update dependency io.opentelemetry:opentelemetry-bom to v1.21.0 ([#173](https://github.com/toddbaert/java-sdk-contrib/issues/173)) ([bb0418d](https://github.com/toddbaert/java-sdk-contrib/commit/bb0418d68845d6611019162bede5afe4e42e493c))
+* **deps:** update dependency io.opentelemetry:opentelemetry-bom to v1.22.0 ([#182](https://github.com/toddbaert/java-sdk-contrib/issues/182)) ([9f20baf](https://github.com/toddbaert/java-sdk-contrib/commit/9f20baf24da9d9a0e728ebbee5a84b9f661b8f3a))
+* **deps:** update dependency io.opentelemetry:opentelemetry-bom to v1.23.0 ([#221](https://github.com/toddbaert/java-sdk-contrib/issues/221)) ([7b1ee7f](https://github.com/toddbaert/java-sdk-contrib/commit/7b1ee7f16bbb46123b95a71f1dc4feec49cded7d))
+* **deps:** update dependency io.opentelemetry:opentelemetry-bom to v1.23.1 ([#226](https://github.com/toddbaert/java-sdk-contrib/issues/226)) ([c76334e](https://github.com/toddbaert/java-sdk-contrib/commit/c76334ecf2d6a39d185243ef9f85e49d5e761d39))
+* **deps:** update dependency io.opentelemetry:opentelemetry-bom to v1.24.0 ([#237](https://github.com/toddbaert/java-sdk-contrib/issues/237)) ([e63d0e3](https://github.com/toddbaert/java-sdk-contrib/commit/e63d0e39273efe1e35a499897c4deb762ba9085a))
+* **deps:** update dependency io.opentelemetry:opentelemetry-bom to v1.25.0 ([#272](https://github.com/toddbaert/java-sdk-contrib/issues/272)) ([bc936f4](https://github.com/toddbaert/java-sdk-contrib/commit/bc936f4682da7d9427d085f8f2b6105c70a72403))
+* publish parent pom ([#101](https://github.com/toddbaert/java-sdk-contrib/issues/101)) ([b05f604](https://github.com/toddbaert/java-sdk-contrib/commit/b05f604e393126e14cc6849760d5a29a3a3c7484))
+* test fix publish ([#83](https://github.com/toddbaert/java-sdk-contrib/issues/83)) ([0eebfe3](https://github.com/toddbaert/java-sdk-contrib/commit/0eebfe3f7ff711455776092a0cb231ba686eb2d3))
+* test fix publish again ([#85](https://github.com/toddbaert/java-sdk-contrib/issues/85)) ([3769e09](https://github.com/toddbaert/java-sdk-contrib/commit/3769e09285dbbe4edd15f6d4801364e21bfc9c67))
+* update javadoc ([#57](https://github.com/toddbaert/java-sdk-contrib/issues/57)) ([7a64cfa](https://github.com/toddbaert/java-sdk-contrib/commit/7a64cfa0ab835139603e4a582f3a2b91f24207bb))
+* update javadoc ([#63](https://github.com/toddbaert/java-sdk-contrib/issues/63)) ([3a4b7d8](https://github.com/toddbaert/java-sdk-contrib/commit/3a4b7d83e2272d43e252f6a1201c4e3a7aee4330))
+* update parent pom ref ([#104](https://github.com/toddbaert/java-sdk-contrib/issues/104)) ([1882854](https://github.com/toddbaert/java-sdk-contrib/commit/1882854775a881314ae75a178b2c354669b2619a))
+* update-parent-pom ([#120](https://github.com/toddbaert/java-sdk-contrib/issues/120)) ([d8ac4bd](https://github.com/toddbaert/java-sdk-contrib/commit/d8ac4bdba6b5d9efb98ea641d50337f0e3ba3139))
+* use read ossrh repo for exists plugin ([#87](https://github.com/toddbaert/java-sdk-contrib/issues/87)) ([bda2651](https://github.com/toddbaert/java-sdk-contrib/commit/bda265194e4a94a2d220b8ef400a0703cb32c235))
+
+
+### Miscellaneous Chores
+
+* use 1.0 sdk ([#123](https://github.com/toddbaert/java-sdk-contrib/issues/123)) ([ee78f61](https://github.com/toddbaert/java-sdk-contrib/commit/ee78f610f669eff6f90ffc958e1be88ed203350f))
+
 ## [1.0.2](https://github.com/open-feature/java-sdk-contrib/compare/dev.openfeature.contrib.hooks.otel-v1.0.1...dev.openfeature.contrib.hooks.otel-v1.0.2) (2023-03-21)
 
 

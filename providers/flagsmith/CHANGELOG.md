@@ -1,5 +1,24 @@
 # Changelog
 
+## [2.0.0](https://github.com/toddbaert/java-sdk-contrib/compare/dev.openfeature.contrib.providers.flagsmith-v0.0.4...dev.openfeature.contrib.providers.flagsmith-v2.0.0) (2023-04-10)
+
+
+### Features
+
+* flagsmith provider ([#167](https://github.com/toddbaert/java-sdk-contrib/issues/167)) ([fd84e65](https://github.com/toddbaert/java-sdk-contrib/commit/fd84e655bda57b2c78ceb8d8931067daf425281e))
+
+
+### Bug Fixes
+
+* **deps:** update dependency com.flagsmith:flagsmith-java-client to v6 ([#263](https://github.com/toddbaert/java-sdk-contrib/issues/263)) ([c3f8ecf](https://github.com/toddbaert/java-sdk-contrib/commit/c3f8ecffcebeb0138db84f4c6e21b27571881a1d))
+* **deps:** update dependency com.squareup.okhttp3:okhttp to v4.10.0 ([#195](https://github.com/toddbaert/java-sdk-contrib/issues/195)) ([32d6884](https://github.com/toddbaert/java-sdk-contrib/commit/32d68846bde79f6cb4ee45cc044bc7955b0d795c))
+* make flagsmith classes public ([#213](https://github.com/toddbaert/java-sdk-contrib/issues/213)) ([137497a](https://github.com/toddbaert/java-sdk-contrib/commit/137497aaa7e8d70c5488a79ef74b6700877f78dd))
+
+
+### Miscellaneous Chores
+
+* release ([c855cd2](https://github.com/toddbaert/java-sdk-contrib/commit/c855cd2160c6c9f1d56b058a79af13725333dfe1))
+
 ## [0.0.4](https://github.com/open-feature/java-sdk-contrib/compare/dev.openfeature.contrib.providers.flagsmith-v0.0.3...dev.openfeature.contrib.providers.flagsmith-v0.0.4) (2023-02-07)
 
 

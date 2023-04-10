@@ -1,5 +1,17 @@
 # Changelog
 
+## [2.0.0](https://github.com/toddbaert/java-sdk-contrib/compare/dev.openfeature.contrib.providers.env-var-v0.0.2...dev.openfeature.contrib.providers.env-var-v2.0.0) (2023-04-10)
+
+
+### Features
+
+* env-var provider ([#243](https://github.com/toddbaert/java-sdk-contrib/issues/243)) ([#244](https://github.com/toddbaert/java-sdk-contrib/issues/244)) ([2c632ed](https://github.com/toddbaert/java-sdk-contrib/commit/2c632ed3069051ee6f90d88a4bf96e27feb70e46))
+
+
+### Miscellaneous Chores
+
+* release ([c855cd2](https://github.com/toddbaert/java-sdk-contrib/commit/c855cd2160c6c9f1d56b058a79af13725333dfe1))
+
 ## [0.0.2](https://github.com/open-feature/java-sdk-contrib/compare/dev.openfeature.contrib.providers.env-var-v0.0.1...dev.openfeature.contrib.providers.env-var-v0.0.2) (2023-03-28)
 
 
